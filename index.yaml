@@ -1,5 +1,25 @@
 apiVersion: v1
 entries:
+  kube-cost-metrics-collector:
+  - apiVersion: v2
+    created: "2026-04-10T16:06:59.632914589Z"
+    dependencies:
+    - name: prometheus
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 17.0.2
+    - name: kube-service-selectors
+      repository: https://greenshift-public-repos.github.io/helm-charts
+      version: 1.0.3
+    description: GreenShift Kubernetes metrics collector.
+    digest: de1ea47c61050fe40a14b2aca7c94a0461b073feb7209b1b56e4ab12f8cc3c0a
+    maintainers:
+    - email: contact@greenshift.app
+      name: greenshift
+    name: kube-cost-metrics-collector
+    type: application
+    urls:
+    - https://github.com/greenshift-public-repos/helm-charts/releases/download/kube-cost-metrics-collector-0.1.2/kube-cost-metrics-collector-0.1.2.tgz
+    version: 0.1.2
   kube-service-selectors:
   - apiVersion: v2
     created: "2026-04-10T16:03:34.140933765Z"
@@ -12,4 +32,4 @@ entries:
     urls:
     - https://github.com/greenshift-public-repos/helm-charts/releases/download/kube-service-selectors-1.0.3/kube-service-selectors-1.0.3.tgz
     version: 1.0.3
-generated: "2026-04-10T16:03:34.140944556Z"
+generated: "2026-04-10T16:06:59.632927183Z"
