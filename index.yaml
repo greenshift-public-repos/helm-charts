@@ -1,0 +1,15 @@
+apiVersion: v1
+entries:
+  kube-service-selectors:
+  - apiVersion: v2
+    created: "2026-04-10T16:03:34.140933765Z"
+    digest: ce8e7f10157ea159c037119e6a85962b67251db171054a8dfa146b14f06caa0a
+    maintainers:
+    - email: info@greenshift.io
+      name: greenshift
+    name: kube-service-selectors
+    type: application
+    urls:
+    - https://github.com/greenshift-public-repos/helm-charts/releases/download/kube-service-selectors-1.0.3/kube-service-selectors-1.0.3.tgz
+    version: 1.0.3
+generated: "2026-04-10T16:03:34.140944556Z"
