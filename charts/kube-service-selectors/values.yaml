@@ -6,7 +6,7 @@ replicaCount: 1
 image:
   repository: greenshiftpublic-bxchgyh9gcdzcxbh.azurecr.io/kube-service-selectors
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
+  # Match this version to latest (or desired) release tag at https://github.com/greenshift-public-repos/kube-service-selectors
   tag: "v1.0.0"
 
 imagePullSecrets: []
