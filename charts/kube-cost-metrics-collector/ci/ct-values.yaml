@@ -3,3 +3,4 @@ prometheus:
     dataSourceId: test
     username: test
     password: test
+    remote_write: []
