@@ -30,18 +30,6 @@ serviceAccount:
   # Reference to one or more secrets to be used when pulling images
   imagePullSecrets: []
 
-readinessProbe:
-  initialDelaySeconds: 10
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
-
-livenessProbe:
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
-
 podAnnotations: {}
 
 podSecurityContext: {}
