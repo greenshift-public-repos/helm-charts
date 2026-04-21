@@ -5,4 +5,4 @@ chart-dirs:
 chart-repos:
   - greenshift=https://greenshift-public-repos.github.io/helm-charts
   - prometheus-community=https://prometheus-community.github.io/helm-charts
-helm-extra-args: --timeout 600s
+helm-extra-args: --timeout 300s

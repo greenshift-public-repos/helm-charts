@@ -3,3 +3,7 @@ prometheus:
     dataSourceId: test
     username: test
     password: test
+  prometheus-node-exporter:
+    enabled: false
+  prometheus-pushgateway:
+    enabled: false
