@@ -3,7 +3,3 @@ prometheus:
     dataSourceId: test
     username: test
     password: test
-    remote_write: []
-    defaultFlagsOverride:
-    - --config.file=/etc/config/prometheus.yml
-    - --web.enable-lifecycle
