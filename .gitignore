@@ -1,5 +1,8 @@
 *.lock
 
+# macOS
+.DS_Store
+
 # Various IDEs
 .project
 .idea/
