@@ -30,8 +30,7 @@ jobs:
           mkdir -p /tmp/local-charts
           helm package charts/kube-service-selectors -d /tmp/local-charts
           helm repo index /tmp/local-charts
-          python3 -m http.server 8879 --directory /tmp/local-charts &
-          helm repo add local-charts http://localhost:8879
+          helm repo add local-charts file:///tmp/local-charts
 
       - name: Run chart-testing (list-changed)
         id: list-changed

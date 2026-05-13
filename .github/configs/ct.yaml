@@ -3,7 +3,6 @@ target-branch: main
 chart-dirs:
   - charts
 chart-repos:
-  - local-charts=http://localhost:8879
   - greenshift=https://greenshift-public-repos.github.io/helm-charts
   - prometheus-community=https://prometheus-community.github.io/helm-charts
 helm-extra-args: --timeout 300s
