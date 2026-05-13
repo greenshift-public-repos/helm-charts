@@ -19,6 +19,25 @@ helm install kube-service-selectors greenshift/kube-service-selectors \
 
 ## Parameters
 
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `readinessProbe.initialDelaySeconds` | Seconds before the first readiness probe fires | `30` |
+| `readinessProbe.timeoutSeconds` | Seconds to wait for a probe response before counting it as a failure | `15` |
+| `readinessProbe.periodSeconds` | How often (in seconds) to run the probe | `30` |
+| `readinessProbe.successThreshold` | Consecutive successes required to mark the pod ready | `1` |
+| `readinessProbe.failureThreshold` | Consecutive failures before the pod is marked not ready | `3` |
+
+The defaults are tuned for large clusters where the service needs time to enumerate all namespaces on startup. For smaller clusters you can tighten them:
+
+```bash
+helm install kube-service-selectors greenshift/kube-service-selectors \
+  --set readinessProbe.initialDelaySeconds=5 \
+  --set readinessProbe.timeoutSeconds=5 \
+  --set readinessProbe.periodSeconds=10 \
+  --namespace greenshift \
+  --create-namespace
+```
+
 For all available options:
 
 ```bash

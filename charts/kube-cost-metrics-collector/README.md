@@ -41,6 +41,9 @@ One release per cluster. All required values are provided by GreenShift when you
 | `prometheus.kubeStateMetrics.enabled` | Set to `false` if kube-state-metrics is already running in your cluster |
 | `prometheus.prometheus-node-exporter.enabled` | Set to `false` if node-exporter is already running in your cluster |
 | `prometheus.prometheus-pushgateway.enabled` | Set to `false` if pushgateway is already running in your cluster |
+| `kube-service-selectors.readinessProbe.initialDelaySeconds` | Seconds before the first readiness check on kube-service-selectors (default `30`) |
+| `kube-service-selectors.readinessProbe.timeoutSeconds` | Timeout per readiness probe attempt on kube-service-selectors (default `15`) |
+| `kube-service-selectors.readinessProbe.periodSeconds` | How often the readiness probe runs on kube-service-selectors (default `30`) |
 
 For all available options:
 
