@@ -44,6 +44,26 @@ One release per cluster. All required values are provided by GreenShift when you
 | `kube-service-selectors.readinessProbe.initialDelaySeconds` | Seconds before the first readiness check on kube-service-selectors (default `30`) |
 | `kube-service-selectors.readinessProbe.timeoutSeconds` | Timeout per readiness probe attempt on kube-service-selectors (default `15`) |
 | `kube-service-selectors.readinessProbe.periodSeconds` | How often the readiness probe runs on kube-service-selectors (default `30`) |
+| `kube-service-selectors.readinessProbe.successThreshold` | Consecutive successes to mark the pod ready (default `1`) |
+| `kube-service-selectors.readinessProbe.failureThreshold` | Consecutive failures before the pod is marked not ready (default `3`) |
+
+On large clusters the defaults are recommended. For smaller clusters you can tighten them:
+
+```bash
+helm install kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
+  --set prometheus.server.dataSourceId=<data-source-id> \
+  --set prometheus.server.username=<username> \
+  --set prometheus.server.password=<password> \
+  --set prometheus.server.remote_write[0].url=https://<your-greenshift-host>/storage/api/v2/write \
+  --set prometheus.server.remote_write[0].name=greenshift \
+  --set kube-service-selectors.readinessProbe.initialDelaySeconds=5 \
+  --set kube-service-selectors.readinessProbe.timeoutSeconds=5 \
+  --set kube-service-selectors.readinessProbe.periodSeconds=10 \
+  --set kube-service-selectors.readinessProbe.successThreshold=1 \
+  --set kube-service-selectors.readinessProbe.failureThreshold=3 \
+  --namespace greenshift \
+  --create-namespace
+```
 
 For all available options:
 
