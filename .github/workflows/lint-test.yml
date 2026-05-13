@@ -32,7 +32,7 @@ jobs:
           helm repo index /tmp/local-charts
           python3 -m http.server 8879 --directory /tmp/local-charts &
           until curl -sf http://localhost:8879/index.yaml > /dev/null; do sleep 0.1; done
-          helm repo add local-charts http://localhost:8879
+          helm repo add greenshift http://localhost:8879
 
       - name: Run chart-testing (list-changed)
         id: list-changed
