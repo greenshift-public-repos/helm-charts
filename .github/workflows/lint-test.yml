@@ -25,6 +25,16 @@ jobs:
         with:
           version: v3.7.0
 
+      - name: Serve local charts for dependency resolution
+        run: |
+          mkdir -p /tmp/local-charts
+          for chart in charts/*/; do
+            helm package "$chart" -d /tmp/local-charts
+          done
+          helm repo index /tmp/local-charts
+          python3 -m http.server 8879 --directory /tmp/local-charts &
+          helm repo add local-charts http://localhost:8879
+
       - name: Run chart-testing (list-changed)
         id: list-changed
         run: |
