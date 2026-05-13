@@ -9,7 +9,7 @@ dependencies:
     repository: https://prometheus-community.github.io/helm-charts
   - name: kube-service-selectors
     version: "1.0.6"
-    repository: https://greenshift-public-repos.github.io/helm-charts
+    repository: "file://../kube-service-selectors"
 maintainers:
   - name: greenshift
     email: contact@greenshift.app
