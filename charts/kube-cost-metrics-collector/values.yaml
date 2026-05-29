@@ -1,20 +1,14 @@
 prometheus:
   kube-state-metrics:
     releaseLabel: true
+    collectors:
+      - pods
+      - nodes
+      - resourcequotas
     metricLabelsAllowlist:
-      - endpoints=[*]
-      - jobs=[*]
-      - namespaces=[*]
       - nodes=[*]
       - pods=[*]
-      - services=[*]
-    metricAnnotationsAllowList:
-      - endpoints=[*]
-      - jobs=[*]
-      - namespaces=[*]
-      - nodes=[*]
-      - pods=[*]
-      - services=[*]
+    metricAnnotationsAllowList: []
 
   serviceAccounts:
     alertmanager:
@@ -24,7 +18,7 @@ prometheus:
     enabled: true
 
   prometheus-node-exporter:
-    enabled: true
+    enabled: false
     hostNetwork: false
     # AKS system node pools carry the CriticalAddonsOnly taint.
     # These tolerations allow node-exporter to run on every node,
@@ -48,6 +42,23 @@ prometheus:
     # The backend generates the install command with this value pre-filled.
     - url: https://<your-greenshift-host>/storage/api/v2/write
       name: greenshift
+      # cAdvisor exports ~100 container_* metrics per container.
+      # GreenShift only reads two of them; drop the rest before they reach Thanos.
+      # RE2 has no negative lookahead, so three rules emulate "drop container_* except X and Y".
+      write_relabel_configs:
+        - source_labels: [__name__]
+          regex: 'container_.*'
+          action: replace
+          target_label: __tmp_gs_drop
+          replacement: '1'
+        - source_labels: [__name__]
+          regex: 'container_cpu_usage_seconds_total|container_memory_usage_bytes'
+          action: replace
+          target_label: __tmp_gs_drop
+          replacement: '0'
+        - source_labels: [__tmp_gs_drop]
+          regex: '1'
+          action: drop
 
 
     # GreenShift Kubernetes data source id
