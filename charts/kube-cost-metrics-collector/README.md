@@ -83,12 +83,20 @@ helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector 
   --set "prometheus.kube-state-metrics.collectors={pods,nodes,resourcequotas,deployments,daemonsets}"
 ```
 
-**Expose labels or annotations for additional resource types:**
+**Expose labels for additional resource types:**
 ```bash
 helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
   --namespace greenshift \
   --reuse-values \
   --set "prometheus.kube-state-metrics.metricLabelsAllowlist={nodes=[*],pods=[*],services=[*]}"
+```
+
+**Expose annotations for additional resource types** (disabled by default):
+```bash
+helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
+  --namespace greenshift \
+  --reuse-values \
+  --set "prometheus.kube-state-metrics.metricAnnotationsAllowList={nodes=[*],pods=[*],services=[*]}"
 ```
 
 **Remove the cAdvisor drop rules** (to send all `container_*` metrics):
