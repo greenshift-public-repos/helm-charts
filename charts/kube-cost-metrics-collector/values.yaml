@@ -5,6 +5,7 @@ prometheus:
       - pods
       - nodes
       - resourcequotas
+      - services
     metricLabelsAllowlist:
       - nodes=[*]
       - pods=[*]
@@ -46,6 +47,13 @@ prometheus:
       # GreenShift only reads two of them; drop the rest before they reach Thanos.
       # RE2 has no negative lookahead, so three rules emulate "drop container_* except X and Y".
       write_relabel_configs:
+        # Drop high-cardinality metrics confirmed unused in GreenShift queries.
+        # Saves ~73K series: apiserver (~33K), etcd (~9K), kube_replicaset (~13K),
+        # kube_pod_status_* (~11K), kube_pod_tolerations (~2K).
+        # container_tasks_state and container_memory_failures_total are caught below.
+        - source_labels: [__name__]
+          regex: 'apiserver_.*|etcd_.*|kube_replicaset_.*|kube_pod_status_reason|kube_pod_status_phase|kube_pod_status_ready|kube_pod_status_scheduled|kube_pod_tolerations'
+          action: drop
         - source_labels: [__name__]
           regex: 'container_.*'
           action: replace
