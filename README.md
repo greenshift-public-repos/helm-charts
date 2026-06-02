@@ -58,6 +58,59 @@ All access is read-only. The chart creates the following ClusterRoles:
 
 No resources are ever created, updated, or deleted in the clients' cluster by any of these components.
 
+## Metric filtering
+
+GreenShift only queries a small subset of the metrics Prometheus scrapes. To reduce storage and prevent Thanos-receive OOMs on high-cardinality clusters, the chart drops unused metrics at the `remote_write` layer before they reach Thanos — after scraping, so nothing in the client cluster is affected.
+
+### What is dropped and why
+
+| Dropped | Series saved | Reason |
+|---------|-------------|--------|
+| `apiserver_.*` | ~33K | API server latency — not a cost metric |
+| `kube_replicaset_.*` | ~13K | ReplicaSet level — not queried |
+| `etcd_.*` | ~9K | etcd internals — not used |
+| `kube_pod_status_reason/phase/ready/scheduled` | ~11K | Pod status detail — not queried |
+| `kube_pod_tolerations` | ~2K | Not queried |
+| `container_.*` (except `container_cpu_usage_seconds_total` and `container_memory_usage_bytes`) | ~98 per container | cAdvisor exports ~100 container metrics; GreenShift only reads two |
+
+Combined these drops reduce Thanos storage by ~48% compared to an unfiltered install.
+
+Dropping at `write_relabel_configs` rather than disabling kube-state-metrics collectors is intentional — collectors like `pods` expose both needed metrics (`kube_pod_info`, `kube_pod_labels`) and unused ones (`kube_pod_status_phase`, etc.) in the same scrape. The only way to keep the former and discard the latter is at the remote_write layer.
+
+### node-exporter
+
+`prometheus-node-exporter` is disabled by default. GreenShift does not query any `node_*` metrics — node capacity is derived from `kube_node_status_capacity` (kube-state-metrics) instead.
+
+### kube-state-metrics collectors
+
+Only the collectors GreenShift actually needs are enabled: `pods`, `nodes`, `resourcequotas`, `services`. Disabling the rest (deployments, daemonsets, statefulsets, etc.) prevents those metrics from being scraped at all.
+
+## Overriding values
+
+Scalar values can be set with `--set` as normal. **Do not use `--set` for `prometheus.server.remote_write`** — `remote_write` is an array and Helm replaces the entire array entry at the given index rather than merging into it. This silently wipes `write_relabel_configs` and the auth wiring the chart template depends on, causing Prometheus to fail to authenticate and stop sending data.
+
+Override the remote_write block via a values file instead:
+
+```bash
+cat > /tmp/my-values.yaml << 'EOF'
+prometheus:
+  server:
+    remote_write:
+      - url: https://<your-greenshift-host>/storage/api/v2/write
+        name: greenshift
+        write_relabel_configs:
+          # ... full block here
+EOF
+
+helm install kcmc greenshift/kube-cost-metrics-collector \
+  -f /tmp/my-values.yaml \
+  --set prometheus.server.dataSourceId=<id> \
+  --set prometheus.server.username=<user> \
+  --set prometheus.server.password=<pass> \
+  --namespace greenshift \
+  --create-namespace
+```
+
 ## Uninstall
 
 ```bash

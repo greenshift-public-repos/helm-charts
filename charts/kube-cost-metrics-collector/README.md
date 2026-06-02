@@ -71,6 +71,72 @@ For all available options:
 helm show values greenshift/kube-cost-metrics-collector
 ```
 
+## Metric collection defaults
+
+By default this chart collects only the metrics that GreenShift actively uses:
+
+| Source | Default behaviour | Metrics kept |
+|--------|------------------|--------------|
+| kube-state-metrics | Runs with 3 collectors: `pods`, `nodes`, `resourcequotas` | `kube_pod_*`, `kube_node_*`, `kube_resourcequota` |
+| cAdvisor (kubelet) | Scraped; unused `container_*` metrics dropped at remote_write | `container_cpu_usage_seconds_total`, `container_memory_usage_bytes` |
+| node-exporter | Disabled | — |
+
+All unused collectors, labels, annotations, and cAdvisor metrics are dropped before reaching Thanos storage.
+
+### Re-enabling optional collectors
+
+Use `helm upgrade` — no uninstall required. Prometheus reloads its config automatically when the ConfigMap is updated.
+
+**Re-enable node-exporter:**
+```bash
+helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
+  --namespace greenshift \
+  --reuse-values \
+  --set prometheus.prometheus-node-exporter.enabled=true
+```
+
+**Add more kube-state-metrics collectors** (e.g. deployments, daemonsets):
+```bash
+helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
+  --namespace greenshift \
+  --reuse-values \
+  --set "prometheus.kube-state-metrics.collectors={pods,nodes,resourcequotas,deployments,daemonsets}"
+```
+
+**Expose labels for additional resource types:**
+```bash
+helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
+  --namespace greenshift \
+  --reuse-values \
+  --set "prometheus.kube-state-metrics.metricLabelsAllowlist={nodes=[*],pods=[*],services=[*]}"
+```
+
+**Expose annotations for additional resource types** (disabled by default):
+```bash
+helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
+  --namespace greenshift \
+  --reuse-values \
+  --set "prometheus.kube-state-metrics.metricAnnotationsAllowList={nodes=[*],pods=[*],services=[*]}"
+```
+
+**Remove the cAdvisor drop rules** (to send all `container_*` metrics):
+
+Create an override file and pass it to `helm upgrade`:
+```yaml
+# cadvisor-override.yaml
+prometheus:
+  server:
+    remote_write:
+      - url: https://<your-greenshift-host>/storage/api/v2/write
+        name: greenshift
+```
+```bash
+helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
+  --namespace greenshift \
+  --reuse-values \
+  --values cadvisor-override.yaml
+```
+
 ## Upgrade
 
 ```bash
