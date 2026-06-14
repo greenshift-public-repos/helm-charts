@@ -87,28 +87,15 @@ Only the collectors GreenShift actually needs are enabled: `pods`, `nodes`, `res
 
 ## Overriding values
 
-Scalar values can be set with `--set` as normal. **Do not use `--set` for `prometheus.server.remote_write`** — `remote_write` is an array and Helm replaces the entire array entry at the given index rather than merging into it. This silently wipes `write_relabel_configs` and the auth wiring the chart template depends on, causing Prometheus to fail to authenticate and stop sending data.
+All scalar values can be set with `--set`. The chart template automatically injects `headers`, `basic_auth`, `tls_config`, and `write_relabel_configs` into the `greenshift` remote write entry — do not set those via `--set` as they are managed by the template.
 
-Override the remote_write block via a values file instead:
+To disable metric filtering entirely:
 
 ```bash
-cat > /tmp/my-values.yaml << 'EOF'
-prometheus:
-  server:
-    remote_write:
-      - url: https://<your-greenshift-host>/storage/api/v2/write
-        name: greenshift
-        write_relabel_configs:
-          # ... full block here
-EOF
-
-helm install kcmc greenshift/kube-cost-metrics-collector \
-  -f /tmp/my-values.yaml \
-  --set prometheus.server.dataSourceId=<id> \
-  --set prometheus.server.username=<user> \
-  --set prometheus.server.password=<pass> \
+helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
   --namespace greenshift \
-  --create-namespace
+  --reuse-values \
+  --set "prometheus.server.writeRelabelConfigs=null"
 ```
 
 ## Uninstall

@@ -43,30 +43,33 @@ prometheus:
     # The backend generates the install command with this value pre-filled.
     - url: https://<your-greenshift-host>/storage/api/v2/write
       name: greenshift
+
+    # Injected into the greenshift remote_write entry by the chart template.
+    # Kept outside remote_write so --set on remote_write[0].url does not wipe these rules.
+    # Set to [] to disable all filtering.
+    writeRelabelConfigs:
+      # Drop high-cardinality metrics confirmed unused in GreenShift queries.
+      # Saves ~73K series: apiserver (~33K), etcd (~9K), kube_replicaset (~13K),
+      # kube_pod_status_* (~11K), kube_pod_tolerations (~2K).
+      - source_labels: [__name__]
+        regex: 'apiserver_.*|etcd_.*|kube_replicaset_.*|kube_pod_status_reason|kube_pod_status_phase|kube_pod_status_ready|kube_pod_status_scheduled|kube_pod_tolerations'
+        action: drop
       # cAdvisor exports ~100 container_* metrics per container.
       # GreenShift only reads two of them; drop the rest before they reach Thanos.
       # RE2 has no negative lookahead, so three rules emulate "drop container_* except X and Y".
-      write_relabel_configs:
-        # Drop high-cardinality metrics confirmed unused in GreenShift queries.
-        # Saves ~73K series: apiserver (~33K), etcd (~9K), kube_replicaset (~13K),
-        # kube_pod_status_* (~11K), kube_pod_tolerations (~2K).
-        # container_tasks_state and container_memory_failures_total are caught below.
-        - source_labels: [__name__]
-          regex: 'apiserver_.*|etcd_.*|kube_replicaset_.*|kube_pod_status_reason|kube_pod_status_phase|kube_pod_status_ready|kube_pod_status_scheduled|kube_pod_tolerations'
-          action: drop
-        - source_labels: [__name__]
-          regex: 'container_.*'
-          action: replace
-          target_label: __tmp_gs_drop
-          replacement: '1'
-        - source_labels: [__name__]
-          regex: 'container_cpu_usage_seconds_total|container_memory_usage_bytes'
-          action: replace
-          target_label: __tmp_gs_drop
-          replacement: '0'
-        - source_labels: [__tmp_gs_drop]
-          regex: '1'
-          action: drop
+      - source_labels: [__name__]
+        regex: 'container_.*'
+        action: replace
+        target_label: __tmp_gs_drop
+        replacement: '1'
+      - source_labels: [__name__]
+        regex: 'container_cpu_usage_seconds_total|container_memory_usage_bytes'
+        action: replace
+        target_label: __tmp_gs_drop
+        replacement: '0'
+      - source_labels: [__tmp_gs_drop]
+        regex: '1'
+        action: drop
 
 
     # GreenShift Kubernetes data source id

@@ -35,6 +35,10 @@ data:
 {{- else }}
         insecure_skip_verify: true
 {{- end }}
+{{- if $root.server.writeRelabelConfigs }}
+      write_relabel_configs:
+{{ $root.server.writeRelabelConfigs | toYaml | indent 8 }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

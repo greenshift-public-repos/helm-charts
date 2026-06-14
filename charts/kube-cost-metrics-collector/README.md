@@ -19,13 +19,13 @@ helm repo add greenshift https://greenshift-public-repos.github.io/helm-charts
 helm repo update
 
 helm install kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
+  --namespace greenshift \
+  --create-namespace \
   --set prometheus.server.dataSourceId=<data-source-id> \
   --set prometheus.server.username=<username> \
   --set prometheus.server.password=<password> \
-  --set prometheus.server.remote_write[0].url=https://<your-greenshift-host>/storage/api/v2/write \
-  --set prometheus.server.remote_write[0].name=greenshift \
-  --namespace greenshift \
-  --create-namespace
+  --set "prometheus.server.remote_write[0].url=https://<your-greenshift-host>/storage/api/v2/write" \
+  --set "prometheus.server.remote_write[0].name=greenshift"
 ```
 
 One release per cluster. All required values are provided by GreenShift when you connect a data source.
@@ -77,7 +77,7 @@ By default this chart collects only the metrics that GreenShift actively uses:
 
 | Source | Default behaviour | Metrics kept |
 |--------|------------------|--------------|
-| kube-state-metrics | Runs with 3 collectors: `pods`, `nodes`, `resourcequotas` | `kube_pod_*`, `kube_node_*`, `kube_resourcequota` |
+| kube-state-metrics | Runs with 4 collectors: `pods`, `nodes`, `resourcequotas`, `services` | `kube_pod_*`, `kube_node_*`, `kube_resourcequota`, `kube_service_*` |
 | cAdvisor (kubelet) | Scraped; unused `container_*` metrics dropped at remote_write | `container_cpu_usage_seconds_total`, `container_memory_usage_bytes` |
 | node-exporter | Disabled | — |
 
@@ -119,22 +119,12 @@ helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector 
   --set "prometheus.kube-state-metrics.metricAnnotationsAllowList={nodes=[*],pods=[*],services=[*]}"
 ```
 
-**Remove the cAdvisor drop rules** (to send all `container_*` metrics):
-
-Create an override file and pass it to `helm upgrade`:
-```yaml
-# cadvisor-override.yaml
-prometheus:
-  server:
-    remote_write:
-      - url: https://<your-greenshift-host>/storage/api/v2/write
-        name: greenshift
-```
+**Disable all metric filtering** (sends everything to Thanos):
 ```bash
 helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
   --namespace greenshift \
   --reuse-values \
-  --values cadvisor-override.yaml
+  --set "prometheus.server.writeRelabelConfigs=null"
 ```
 
 ## Upgrade
@@ -143,6 +133,12 @@ helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector 
 helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector \
   --namespace greenshift
 ```
+
+### Upgrading from 0.1.7 to 0.1.8
+
+`prometheus-node-exporter` is now **disabled by default**. Helm will delete the node-exporter DaemonSet as part of the upgrade — this is intentional. To keep it running, pass `--set prometheus.prometheus-node-exporter.enabled=true`.
+
+Metric filtering rules (`write_relabel_configs`) are now injected by the chart template and no longer live in `values.yaml`. If you previously supplied a custom `remote_write` block via a values file, remove `write_relabel_configs` from it — the template now adds them automatically.
 
 ### Upgrading from 0.1.0 to 0.1.1+
 
