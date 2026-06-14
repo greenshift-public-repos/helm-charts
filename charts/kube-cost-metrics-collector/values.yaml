@@ -46,6 +46,9 @@ prometheus:
 
     # Injected into the greenshift remote_write entry by the chart template.
     # Kept outside remote_write so --set on remote_write[0].url does not wipe these rules.
+    # Note: when overriding remote_write[0].url via --set, always also set
+    # remote_write[0].name=greenshift — Helm replaces the whole array element, and
+    # the template's auth and filtering injection is gated on name == "greenshift".
     # Set to null to disable all filtering.
     writeRelabelConfigs:
       # Drop high-cardinality metrics confirmed unused in GreenShift queries.

@@ -89,6 +89,13 @@ Only the collectors GreenShift actually needs are enabled: `pods`, `nodes`, `res
 
 All scalar values can be set with `--set`. The chart template automatically injects `headers`, `basic_auth`, `tls_config`, and `write_relabel_configs` into the `greenshift` remote write entry — do not set those via `--set` as they are managed by the template.
 
+When overriding `remote_write[0].url`, always also set `remote_write[0].name=greenshift`. Helm replaces the entire array element on any `--set remote_write[0].*` call, so omitting `name` drops it and the template's auth and filtering injection (gated on `name == "greenshift"`) silently stops working:
+
+```bash
+--set "prometheus.server.remote_write[0].url=https://<host>/storage/api/v2/write" \
+--set "prometheus.server.remote_write[0].name=greenshift"
+```
+
 To disable metric filtering entirely:
 
 ```bash
