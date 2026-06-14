@@ -138,7 +138,7 @@ helm upgrade kube-cost-metrics-collector greenshift/kube-cost-metrics-collector 
 
 `prometheus-node-exporter` is now **disabled by default**. Helm will delete the node-exporter DaemonSet as part of the upgrade — this is intentional. To keep it running, pass `--set prometheus.prometheus-node-exporter.enabled=true`.
 
-Metric filtering rules (`write_relabel_configs`) are now injected by the chart template and no longer live in `values.yaml`. If you previously supplied a custom `remote_write` block via a values file, remove `write_relabel_configs` from it — the template now adds them automatically.
+Metric filtering rules have moved from inside the `remote_write` array to `prometheus.server.writeRelabelConfigs` in `values.yaml`, and are injected into the remote write config by the chart template. If you previously supplied `write_relabel_configs` inside a custom `remote_write` values file, remove them — the template now adds them automatically from `prometheus.server.writeRelabelConfigs`.
 
 ### Upgrading from 0.1.0 to 0.1.1+
 

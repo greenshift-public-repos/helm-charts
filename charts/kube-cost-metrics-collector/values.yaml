@@ -46,7 +46,7 @@ prometheus:
 
     # Injected into the greenshift remote_write entry by the chart template.
     # Kept outside remote_write so --set on remote_write[0].url does not wipe these rules.
-    # Set to [] to disable all filtering.
+    # Set to null to disable all filtering.
     writeRelabelConfigs:
       # Drop high-cardinality metrics confirmed unused in GreenShift queries.
       # Saves ~73K series: apiserver (~33K), etcd (~9K), kube_replicaset (~13K),
